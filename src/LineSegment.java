@@ -1,5 +1,3 @@
-import edu.princeton.cs.algs4.StdDraw;
-
 /**
  * Created by lu on 18/08/17
  */
@@ -14,7 +12,7 @@ public class LineSegment {
     }
 
     public void draw() {
-        StdDraw.line(p.getX(), p.getY(), q.getX(), q.getY());
+        p.drawTo(q);
     }
 
     public String toString() {

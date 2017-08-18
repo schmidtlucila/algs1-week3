@@ -50,12 +50,4 @@ public class Point implements Comparable<Point> {
             }
         };
     }
-
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
-    }
 }

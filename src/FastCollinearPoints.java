@@ -25,7 +25,7 @@ public class FastCollinearPoints {
             int amount = 2;
             for (Point q : points) {
                 double currentSlope = p.slopeTo(q);
-                if (referenceSlope == currentSlope && (currentSlope != Double.POSITIVE_INFINITY || p.getX() == q.getX())) {
+                if (referenceSlope == currentSlope) {
                     sameLinePoints[amount] = q;
                     amount++;
                 } else {

@@ -49,12 +49,7 @@ public class BruteCollinearPoints {
     }
 
     private boolean areCollinears(Point p, Point q, Point r, Point s) {
-        boolean sameSlope = p.slopeTo(q) == q.slopeTo(r) && q.slopeTo(r) == r.slopeTo(s);
-        return sameSlope && (p.slopeTo(q) != Double.POSITIVE_INFINITY || sameX(p, q, r, s));
-    }
-
-    private boolean sameX(Point p, Point q, Point r, Point s) {
-        return p.getX() == q.getX() && q.getX() == r.getX() && r.getX() == s.getX();
+        return p.slopeTo(q) == p.slopeTo(q) && p.slopeTo(q) == q.slopeTo(r) && q.slopeTo(r) == r.slopeTo(s);
     }
 
     private boolean validate(Point[] points) {

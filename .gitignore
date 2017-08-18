@@ -3,6 +3,7 @@
 .project
 .settings/
 target/
+out/
 test-output/
 .directory
 *.swp
