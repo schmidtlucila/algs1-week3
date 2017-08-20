@@ -9,29 +9,56 @@ import java.util.Arrays;
  */
 public class FastCollinearPoints {
 
-    private LineSegment[] lineSegments;
-    private final Point[] points;
+    private final LineSegment[] lineSegments;
 
     public FastCollinearPoints(Point[] points) {
         if (!validate(points)) throw new IllegalArgumentException();
-        this.points = Arrays.copyOf(points, points.length);
-        if (points.length == 0) return;
+        if (points.length < 4) {
+            lineSegments = new LineSegment[]{};
+            return;
+        }
+
         Point[][] lineSegments = new Point[points.length][2];
         int lineSegmentAmount = 0;
-        for (Point p : this.points) {
-            Arrays.sort(points, p.slopeOrder());
-            double referenceSlope = points[0].slopeTo(points[0]);
-            Point[] sameLinePoints = new Point[4];
-            int amount = 2;
-            for (Point q : points) {
-                double currentSlope = p.slopeTo(q);
+        Point[] sortedPoints = Arrays.copyOf(points, points.length);
+        for (Point p : points) {
+            Arrays.sort(sortedPoints, p.slopeOrder());
+            //first will be -infinity
+            double referenceSlope = p.slopeTo(sortedPoints[0]);
+            Point[] sameLinePoints = new Point[points.length];
+            sameLinePoints[0] = p;
+            int amount = 1;
+            for (int i = 0; i < sortedPoints.length; i++) {
+                Point q = sortedPoints[i];
+                if (p.slopeTo(q) != Double.NEGATIVE_INFINITY) {
+                    sameLinePoints[amount] = q;
+                    amount++;
+                }
+
+                if (i == sortedPoints.length - 1 || nextHasDifferentSlope(p, i, sortedPoints)) {
+                    if (amount >= 4 && p.slopeTo(q) != Double.NEGATIVE_INFINITY) {
+                        sameLinePoints = Arrays.copyOf(sameLinePoints, amount);
+                        Arrays.sort(sameLinePoints);
+                        Point[] segment = new Point[]{sameLinePoints[0], sameLinePoints[amount - 1]};
+                        if (!isPresentIn(lineSegments, segment)) {
+                            if (lineSegmentAmount == lineSegments.length) {
+                                lineSegments = Arrays.copyOf(lineSegments, 2 * lineSegmentAmount);
+                            }
+                            lineSegments[lineSegmentAmount] = segment;
+                            lineSegmentAmount++;
+                        }
+                    }
+                    sameLinePoints = new Point[points.length];
+                    sameLinePoints[0] = p;
+                    amount = 1;
+                }
+
+                /*double currentSlope = p.slopeTo(q);
                 if (referenceSlope == currentSlope) {
                     sameLinePoints[amount] = q;
                     amount++;
                 } else {
-                    if (amount >= 4) {
-                        sameLinePoints[0] = p;
-                        sameLinePoints[1] = q;
+                    if (amount >= 4 && referenceSlope != Double.NEGATIVE_INFINITY) {
                         Arrays.sort(sameLinePoints);
                         Point[] segment = new Point[]{sameLinePoints[0], sameLinePoints[sameLinePoints.length - 1]};
                         if (!isPresentIn(lineSegments, segment)) {
@@ -41,8 +68,20 @@ public class FastCollinearPoints {
                     }
                     referenceSlope = currentSlope;
                     sameLinePoints = new Point[4];
-                    amount = 0;
+                    sameLinePoints[0] = p;
+                    sameLinePoints[1] = q;
+                    amount = 2;
                 }
+                if (i == sortedPoints.length - 1) {
+                    if (amount >= 4 && referenceSlope != Double.NEGATIVE_INFINITY) {
+                        Arrays.sort(sameLinePoints);
+                        Point[] segment = new Point[]{sameLinePoints[0], sameLinePoints[sameLinePoints.length - 1]};
+                        if (!isPresentIn(lineSegments, segment)) {
+                            lineSegments[lineSegmentAmount] = segment;
+                            lineSegmentAmount++;
+                        }
+                    }
+                }*/
             }
         }
 
@@ -53,21 +92,27 @@ public class FastCollinearPoints {
         }
     }
 
+    private boolean nextHasDifferentSlope(Point p, int i, Point[] sortedPoints) {
+        return p.slopeTo(sortedPoints[i]) != p.slopeTo(sortedPoints[i + 1]);
+    }
+
     private boolean validate(Point[] points) {
         if (points == null) return false;
         int n = points.length;
         for (int i = 0; i < n; i++) {
-            Point point = points[i];
-            if (point == null) return false;
-            int index = Arrays.binarySearch(points, i + 1, n, point);
-            if (index > 0) return false;
+            if (points[i] == null) return false;
+            for (int j = i + 1; j < n; j++) {
+                if (points[j] == null || points[i].slopeTo(points[j]) == Double.NEGATIVE_INFINITY) {
+                    return false;
+                }
+            }
         }
-
         return true;
     }
 
     private boolean isPresentIn(Point[][] lineSegments, Point[] segment) {
         for (Point[] pair : lineSegments) {
+            if (pair == null) break;
             if (pair.length == 2 && segment.length == 2 && pair[0] == segment[0] && pair[1] == segment[1]) {
                 return true;
             }
@@ -81,7 +126,7 @@ public class FastCollinearPoints {
     }
 
     public LineSegment[] segments() {
-        return lineSegments == null ? new LineSegment[]{} : lineSegments;
+        return lineSegments == null ? new LineSegment[]{} : Arrays.copyOf(lineSegments, lineSegments.length);
     }
 
     public static void main(String[] args) {
